@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 // A topic is a logical category of messages
@@ -5,4 +6,15 @@ import java.util.List;
 public class Topic {
     String topicName;
     List<Partition> partitions;
+
+    public Topic(String topicName, Integer numPartitions) {
+        partitions = new ArrayList<>(numPartitions);
+        for (int i = 0; i < numPartitions; i++) {
+            partitions.add(new Partition());
+        }
+    }
+
+    public void publishMessage(String message) {
+        // Publish a message to a particular partition
+    }
 }
