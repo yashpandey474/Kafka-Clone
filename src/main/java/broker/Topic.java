@@ -1,3 +1,6 @@
+package KafkaClone.broker;
+
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -6,6 +9,9 @@ import java.util.List;
 public class Topic {
     String topicName;
     List<Partition> partitions;
+
+    // Round robin to partitions
+    int currPartition;
 
     public Topic(String topicName, Integer numPartitions) {
         partitions = new ArrayList<>(numPartitions);
@@ -16,5 +22,7 @@ public class Topic {
 
     public void publishMessage(String message) {
         // Publish a message to a particular partition
+        partitions.get(currPartition%partitions.size()).
+        
     }
 }
