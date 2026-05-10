@@ -1,7 +1,7 @@
 package KafkaClone.src.main.java.broker;
+
 import java.util.HashMap;
 import java.util.Map;
-
 
 // Broker is a kafka server, we start with only one server containing all topics
 public class Broker {
@@ -14,7 +14,7 @@ public class Broker {
         this.defaultPartition = defaultPartition;
         this.autoTopicCreate = autoTopicCreate;
     }
-    
+
     public void createTopic(String topicName, int numPartitions) {
         if (topics.containsKey(topicName)) {
             System.out.printf("The topic %s is already present\n", topicName);
@@ -23,15 +23,18 @@ public class Broker {
         System.out.printf("New topic created with name %s and partitions %d\n", topicName, numPartitions);
     }
 
-
     public void publishMessage(String message, String topicName) {
         // Given a message and topic, publish it
-        
+
         if (!topics.containsKey(topicName)) {
-            System.out.printf("Topic with name %s does not exist and auto creation set to", topicName);
-            return;
+            System.out.printf("Topic with name %s does not exist and auto creation set to %b \n", this.autoTopicCreate);
+            if (this.autoTopicCreate == false) {
+                System.out.printf("ERROR: Topic does not exist \n");
+                return;
+            }
+            createTopic(topicName, this.defaultPartition);
         }
-        
+
         Topic t = topics.get(topicName);
         t.publishMessage(message);
     }
