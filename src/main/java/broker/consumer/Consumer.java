@@ -1,4 +1,4 @@
-package KafkaClone.consumer;
+package KafkaClone.src.main.java.broker.consumer;
 
 import java.util.Map;
 
@@ -9,4 +9,6 @@ public class Consumer {
 
     // Topic that it is assigned to, multiple consumers can read from same topic
     String topic;
+
+
 }
