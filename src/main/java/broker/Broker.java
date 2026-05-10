@@ -6,8 +6,12 @@ import java.util.Map;
 // Broker is a kafka server, we start with only one server containing all topics
 public class Broker {
     Map<String, Topic> topics;
-    public Broker (){
+    boolean autoTopicCreate;
+    int defaultPartition;
+    public Broker (boolean autoTopicCreate , int defaultPartition){
     this.topics =new HashMap<>();
+    this.defaultPartition=defaultPartition;
+    this.autoTopicCreate=autoTopicCreate;
     }
 
 
