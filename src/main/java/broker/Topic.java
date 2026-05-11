@@ -18,14 +18,16 @@ public class Topic {
 
         partitions = new ArrayList<>(numPartitions);
         for (int i = 0; i < numPartitions; i++) {
-            partitions.add(new Partition());
+            partitions.add(new Partition(i));
         }
     }
 
-    public void publishMessage(String message) {
+    public void addMessageToTopic(String message) {
         // Publish a message to a particular partition
-        // [0, 1, 2], messages: a, b, c, d, e-> [0, 1, 2]?
-        partitions.get(currPartition);
+        System.out.printf("Message %s being add to partition %d", message, currPartition);
+
+        //Create message object
+        partitions.get(currPartition).createAndAddMessage(message);;
         currPartition = (currPartition + 1) % partitions.size();
     }
 }

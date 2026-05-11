@@ -4,7 +4,12 @@ import java.util.List;
 
 // Partition is what actually holds the messages for a particular topic
 public class Partition {
+    int partitionNo;
     List<Message> messages;
+
+    public Partition(int partitionNo) {
+        this.partitionNo = partitionNo;
+    }
 
     // Partition adds message to its actual message queue
     public void addMessage(Message message) {
@@ -17,5 +22,11 @@ public class Partition {
             return null;
         }
         return messages.get(offset);
+    }
+
+    public void createAndAddMessage(String message) {
+        Message m = new Message(message, messages.size());
+        addMessage(m);
+        
     }
 }
