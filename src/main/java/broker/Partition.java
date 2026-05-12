@@ -1,5 +1,6 @@
 package KafkaClone.src.main.java.broker;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // Partition is what actually holds the messages for a particular topic
@@ -9,6 +10,7 @@ public class Partition {
 
     public Partition(int partitionNo) {
         this.partitionNo = partitionNo;
+        this.messages = new ArrayList<>();
     }
 
     // Partition adds message to its actual message queue

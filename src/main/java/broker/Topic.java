@@ -24,7 +24,7 @@ public class Topic {
 
     public void addMessageToTopic(String message) {
         // Publish a message to a particular partition
-        System.out.printf("Message %s being add to partition %d", message, currPartition);
+        System.out.printf("Message %s being added to partition %d\n", message, currPartition);
 
         //Create message object
         partitions.get(currPartition).createAndAddMessage(message);;
