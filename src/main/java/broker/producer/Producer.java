@@ -5,8 +5,8 @@ public class Producer {
     // Producer publishes messages to a broker
     Broker broker;
 
-    public Producer(boolean autoTopicCreate, int defaultPartition) {
-        this.broker = new Broker(autoTopicCreate, defaultPartition);
+    public Producer(Broker broker) {
+        this.broker = broker;
     }
     
     public boolean createTopic(String topicName, int numPartitions) {

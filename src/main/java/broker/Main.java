@@ -8,8 +8,11 @@ public class Main {
         boolean automaticTopicCreation = false;
         int defaultPartition = 3;
         
-        //Initialie a producer
-        Producer p = new Producer(automaticTopicCreation, defaultPartition);
+        // Initialise Kafka Brokers
+        Broker b = new Broker(automaticTopicCreation, defaultPartition);
+
+        //Initialie a producer - independent from Brokers
+        Producer p = new Producer(broker);
 
         // Create a topic
         p.createTopic("topic1", 3);
