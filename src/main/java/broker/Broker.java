@@ -41,4 +41,16 @@ public class Broker {
         System.out.printf("Published message %s to topic %s", message, topicName);
         return true;
     }
+
+    public int getPartitions(String topicName) {
+        if (!topics.containsKey(topicName)) {
+            System.out.printf("Topic with name %s \n", topicName);
+            return 0;
+        }
+        
+        System.out.printf("Topic with name %s has partitions %d \n", topicName,
+                topics.get(topicName).partitions.size());
+                
+        return topics.get(topicName).partitions.size();
+    }
 }
