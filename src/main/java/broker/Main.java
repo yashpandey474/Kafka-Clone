@@ -5,6 +5,7 @@ import KafkaClone.src.main.java.broker.producer.Producer;
 public class Main {
 
     public static void main(String[] args) {
+        // 
         boolean automaticTopicCreation = false;
         int defaultPartition = 3;
         
@@ -25,7 +26,5 @@ public class Main {
         // It asks the broker for number of partitions when subscribing
         // When polling, it asks for all unread messages from an offset
 
-
     }
-    
 }

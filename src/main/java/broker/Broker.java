@@ -57,12 +57,10 @@ public class Broker {
     
     public List<Message> getMessages(String topicName, int partitionNo, int offset) {
         System.out.printf("Getting messages from: \n topic: %s \n partition number: $d \n offset: %d \n");
-        if (!topics.containsKey(topicName){
+        if (!topics.containsKey(topicName)){
             System.out.printf("Topic with name %s does not exist \n", topicName);
             return null;
         }
-
         return topics.get(topicName).getMessages(partitionNo, offset);
-
     }
 }

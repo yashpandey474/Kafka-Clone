@@ -8,7 +8,6 @@ public class Producer {
     public Producer(Broker broker) {
         this.broker = broker;
     }
-    
     public boolean createTopic(String topicName, int numPartitions) {
         return this.broker.createTopic(topicName, numPartitions);
     }
