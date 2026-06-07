@@ -10,20 +10,28 @@ public class Consumer {
     Map<Integer, Integer> offsets;
 
     // Topic that it is assigned to, multiple consumers can read from same topic
-    String topic;
+    String topicName;
 
     // Broker that provides it with messages for the partitions, later could be a wrapper with list of Brokers
     Broker broker;
 
     // Should know topic and broker
-    public Consumer(String topic, Broker broker) {
+    public Consumer(String topicName, Broker broker) {
         this.broker = broker;
-        this.topic = topic;
+        this.topicName = topicName;
         initialiseOffsets();
     }
 
     public void initialiseOffsets() {
-        
+        for (int i = 0; i < broker.getPartitions(topicName); i++) {
+            offsets.put(i, 0);
+        }
     }
 
+    public void poll() {
+        for (Map.Entry<Integer, Integer> e : offsets.entrySet()) {
+            // Poll for messages from a partition and offset
+            broker.getMessages(topicName, e.getKey(), e.getValue());
+        }
+    }
 }

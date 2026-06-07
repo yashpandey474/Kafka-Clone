@@ -30,4 +30,13 @@ public class Topic {
         partitions.get(currPartition).createAndAddMessage(message);;
         currPartition = (currPartition + 1) % partitions.size();
     }
+
+    public List<Message> getMessages(int partitionNo, int offset) {
+        if (partitionNo < 0 || partitionNo >= partitions.size()) {
+            System.out.printf("Partition %d does not exist in topic %s \n", partitionNo, topicName);
+            return null;
+        }
+
+        return partitions.get(partitionNo).getMessagesFromOffset(offset);
+    }
 }

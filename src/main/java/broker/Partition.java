@@ -2,6 +2,7 @@ package KafkaClone.src.main.java.broker;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 // Partition is what actually holds the messages for a particular topic
 public class Partition {
@@ -26,9 +27,15 @@ public class Partition {
         return messages.get(offset);
     }
 
+    // Fetch messages from a particular offset => correct kafka design to reduce latency and increase throughput
+    public List<Message> getMessagesFromOffset(int offset) {
+        return messages.stream()
+            .skip(offset)
+            .collect(Collectors.toList());
+    }
+
     public void createAndAddMessage(String message) {
         Message m = new Message(message, messages.size());
         addMessage(m);
-        
     }
 }

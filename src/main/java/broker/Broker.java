@@ -1,6 +1,7 @@
 package KafkaClone.src.main.java.broker;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 // Broker is a kafka server, we start with only one server containing all topics
@@ -44,13 +45,24 @@ public class Broker {
 
     public int getPartitions(String topicName) {
         if (!topics.containsKey(topicName)) {
-            System.out.printf("Topic with name %s \n", topicName);
+            System.out.printf("Topic with name %s does not exist\n", topicName);
             return 0;
         }
-        
+
         System.out.printf("Topic with name %s has partitions %d \n", topicName,
                 topics.get(topicName).partitions.size());
-                
+
         return topics.get(topicName).partitions.size();
+    }
+    
+    public List<Message> getMessages(String topicName, int partitionNo, int offset) {
+        System.out.printf("Getting messages from: \n topic: %s \n partition number: $d \n offset: %d \n");
+        if (!topics.containsKey(topicName){
+            System.out.printf("Topic with name %s does not exist \n", topicName);
+            return null;
+        }
+
+        return topics.get(topicName).getMessages(partitionNo, offset);
+
     }
 }
