@@ -26,11 +26,11 @@ public class Topic {
         partitions = new ArrayList<>(numPartitions);
         for (int i = 0; i < numPartitions; i++) {
             // create a log file for the partition
-            File file = new File(
-                "data/" + topicName + "/partition-" + i + ".log"
-            );
+            String fileName = "data/" + topicName + "/partition-" + i + ".log";
+            File file = new File(fileName);
+
             // initialise partition
-            partitions.add(new Partition(i, file));
+            partitions.add(new Partition(i, file, fileName));
         }
     }
 
