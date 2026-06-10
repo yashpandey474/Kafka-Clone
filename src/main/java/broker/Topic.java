@@ -1,5 +1,6 @@
 package KafkaClone.src.main.java.broker;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +17,20 @@ public class Topic {
         this.topicName = topicName;
         this.currPartition = 0;
 
+        // create directory for the partition
+        File topicsDirectory = new File(
+            "data/" + topicName
+        );
+        topicsDirectory.mkdirs();
+
         partitions = new ArrayList<>(numPartitions);
         for (int i = 0; i < numPartitions; i++) {
-            partitions.add(new Partition(i));
+            // create a log file for the partition
+            File file = new File(
+                "data/" + topicName + "/partition-" + i + ".log"
+            );
+            // initialise partition
+            partitions.add(new Partition(i, file));
         }
     }
 
@@ -36,7 +48,6 @@ public class Topic {
             System.out.printf("Partition %d does not exist in topic %s \n", partitionNo, topicName);
             return null;
         }
-
         return partitions.get(partitionNo).getMessagesFromOffset(offset);
     }
 }

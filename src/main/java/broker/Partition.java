@@ -1,5 +1,9 @@
 package KafkaClone.src.main.java.broker;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOError;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -8,15 +12,29 @@ import java.util.stream.Collectors;
 public class Partition {
     int partitionNo;
     List<Message> messages;
+    File logFile;
 
-    public Partition(int partitionNo) {
+    public Partition(int partitionNo, File logfile) {
         this.partitionNo = partitionNo;
         this.messages = new ArrayList<>();
+        this.logFile = logfile;
     }
 
     // Partition adds message to its actual message queue
-    public void addMessage(Message message) {
-        messages.add(message);
+    public void addMessage(Message message) throws IOException { 
+        // open file in append mode
+        FileWriter writer = null;
+        try{
+           writer = new FileWriter(logFile, true);
+        } catch (Exception e) {
+            if (writer != null) {
+                writer.close();
+            }
+            System.out.printf("Error: %s", e.getMessage());
+            return;
+        }
+        writer.write(message.offset + ":" + message.content + "\n");
+        writer.close();
     }
 
     // Fetch message at a particular offset

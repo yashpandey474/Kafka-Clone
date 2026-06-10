@@ -2,6 +2,7 @@ package KafkaClone.src.main.java.broker;
 
 // Offset is needed for a message so that consumers can track until where they have read from a partition
 public class Message {
+    // kafka -> lists -> 10 message -> consumer, 10 -> 11th message
     String content;
     int offset; // so that consumer also knows until which offset they had read and can continue from there
 
