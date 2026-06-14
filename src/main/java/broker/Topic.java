@@ -1,6 +1,7 @@
 package KafkaClone.src.main.java.broker;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +49,15 @@ public class Topic {
             System.out.printf("Partition %d does not exist in topic %s \n", partitionNo, topicName);
             return null;
         }
-        return partitions.get(partitionNo).getMessagesFromOffset(offset);
+        try {
+            return partitions.get(partitionNo).getMessagesFromOffset(offset);
+        } catch (NumberFormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
     }
 }

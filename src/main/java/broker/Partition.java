@@ -17,18 +17,29 @@ public class Partition {
     List<Message> messages;
     File logFile;
     String fileName;
+    int currentOffset;
 
     public Partition(int partitionNo, File logfile, String fileName) {
         this.partitionNo = partitionNo;
         this.messages = new ArrayList<>();
         this.logFile = logfile;
         this.fileName = fileName;
+        this.currentOffset = 0;
+    }
+
+    public int getCurrentOffset() {
+        return this.currentOffset;
+    }
+
+    public void setCurrentOffset(int offset) {
+        this.currentOffset = offset;
     }
 
     // Partition adds message to its actual message queue
     public void addMessage(Message message) throws IOException { 
         // open file in append mode
         FileWriter writer = null;
+        int currentOffset = getCurrentOffset();
         try{
            writer = new FileWriter(logFile, true);
         } catch (Exception e) {
@@ -38,8 +49,9 @@ public class Partition {
             System.out.printf("Encountered an error while writing message to file %s: %s", fileName, e.getMessage());
             return;
         }
-        writer.write(message.offset + ":" + message.content + "\n");
+        writer.write(currentOffset + ":" + message.content + "\n");
         writer.close();
+        setCurrentOffset(currentOffset + 1);
     }
 
     // Fetch messages from a particular offset => correct kafka design to reduce latency and increase throughput
@@ -66,6 +78,11 @@ public class Partition {
 
     public void createAndAddMessage(String message) {
         Message m = new Message(message, messages.size());
-        addMessage(m);
+        try {
+            addMessage(m);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }
