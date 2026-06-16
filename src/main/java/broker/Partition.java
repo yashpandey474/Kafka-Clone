@@ -38,11 +38,13 @@ public class Partition {
         this.currentOffset = offset;
     }
 
+    public int getSegmentNo() {
+        return(currentOffset / messageLimitPerSegment);
+    }
     // Partition adds message to its actual message queue
     public void addMessage(Message message) throws IOException { 
         // Choose correct logsegment based on current offset?
-        int segmentNo = (currentOffset / messageLimitPerSegment);
-
+        int segmentNo = getSegmentNo();
         // Initialise the new segment
         if (segmentNo == this.segments.size()) {
             String segmentFileName = partitionDirectoryName + "/segment-" + segmentNo + ".log";
@@ -60,7 +62,8 @@ public class Partition {
     // Fetch messages from a particular offset => correct kafka design to reduce latency and increase throughput
     public List<Message> getMessagesFromOffset(int offset) throws NumberFormatException, IOException {
         // read from file
-
+        int segmentNo = getSegmentNo();
+        return segments.get(segmentNo).readFromOffset(offset);
     }
 
     public void createAndAddMessage(String message) {
