@@ -17,12 +17,17 @@ public class Partition {
     List<LogSegment> segments;
     int messageLimitPerSegment;
     int currentOffset;
+    String partitionDirectoryName;
 
-    public Partition(int partitionNo, int messageLimitPerSegment) {
+    public Partition(int partitionNo, int messageLimitPerSegment, String topicName, String topicDirectoryName) {
         this.partitionNo = partitionNo;
         this.messageLimitPerSegment = messageLimitPerSegment;
         this.segments = new ArrayList<>(); // need to implement recovery - read from existing files based on partitionNo and a base director
         this.currentOffset = 0;
+
+        this.partitionDirectoryName = topicDirectoryName + "/partition-" + partitionNo;
+        File partitionDirectory = new File(partitionDirectoryName);
+        partitionDirectory.mkdirs();
     }
 
     public int getCurrentOffset() {
@@ -40,7 +45,9 @@ public class Partition {
 
         // Initialise the new segment
         if (segmentNo == this.segments.size()) {
-            segments.add(new LogSegment(messageLimitPerSegment*segmentNo, segmentNo))
+            String segmentFileName = partitionDirectoryName + "/segment-" + segmentNo + ".log";
+            File segmentFile = new File(segmentFileName);
+            segments.add(new LogSegment(currentOffset, messageLimitPerSegment, segmentFileName, segmentFile));
         } else if (segmentNo > this.segments.size()){
             System.out.printf("Segment No: %d is greater than size of segments %d. Missing segment", segmentNo, this.segments.size());
             return;
@@ -53,27 +60,11 @@ public class Partition {
     // Fetch messages from a particular offset => correct kafka design to reduce latency and increase throughput
     public List<Message> getMessagesFromOffset(int offset) throws NumberFormatException, IOException {
         // read from file
-        List<Message> result = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(":");
-                int msgOffset = Integer.parseInt(parts[0]);
-                if (msgOffset >= offset) {
-                    result.add(new Message(parts[1], msgOffset));
-                }
-            }
-        } catch (Exception e) {
-            System.out.printf("Encountered error while reading from file %s: %s", fileName, e.getMessage());
-        }
-
-        return result;
     }
 
     public void createAndAddMessage(String message) {
-        Message m = new Message(message, messages.size());
+        Message m = new Message(message, currentOffset);
         try {
             addMessage(m);
         } catch (IOException e) {
