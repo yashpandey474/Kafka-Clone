@@ -39,7 +39,7 @@ public class Partition {
     }
 
     public int getSegmentNo() {
-        return(currentOffset / messageLimitPerSegment);
+        return (currentOffset / messageLimitPerSegment);
     }
     // Partition adds message to its actual message queue
     public void addMessage(Message message) throws IOException { 

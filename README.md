@@ -65,3 +65,9 @@ Broker -----> Topic -----> Partition -----> Log File
    ^
    |
 Consumer
+
+## Contract for Message serialisation
+Message should be stored in bytes rather than using ':' as a separator.
+We need a contract for how many bytes each field will occupy.
+Fields required: offset, timestamp, key length, key value, value length, value field value 
+Initial contract: offset - 8 bytes, timestamp - 8 bytes, key length - 4 bytes, key value - variable, value length - 4 bytes, value field value - variable
