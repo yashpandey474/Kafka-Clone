@@ -1,23 +1,36 @@
 package KafkaClone.src.main.java.broker;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 public class MessageSerializer {
     // This class handles serialising the message to bytes and deserialising back to message
     public byte[] serialise(Message message) {
+
+        // Convert string to bytes
+        byte[] keyBytes = message.key.getBytes(StandardCharsets.UTF_8);
+        byte[] valueBytes = message.value.getBytes(StandardCharsets.UTF_8);
+
         // Allocate bytes according to contract
         int offsetBytes = 8;
         int timestampBytes = 8;
         int keyLengthBytes = 4;
-        int keyValueBytes = message.key.length();
+        int keyValueBytes = keyBytes.length;
         int valueFieldLengthBytes = 4;
-        int valueFieldValueBytes = message.value.length();
+        int valueFieldValueBytes = valueBytes.length;
 
+    
         ByteBuffer buffer = ByteBuffer.allocate(offsetBytes + timestampBytes + keyLengthBytes + keyValueBytes
                 + valueFieldLengthBytes + valueFieldValueBytes);
         
         // Put data into the buffer
         buffer.putInt(message.offset);
-        buffer.putLong()
+        buffer.putLong(message.timestamp.getEpochSecond());
+        buffer.putInt(keyValueBytes);
+        buffer.put(keyBytes);
+        buffer.putInt(valueFieldValueBytes);
+        buffer.put(valueBytes);
+
+        return buffer.array();
     }
 }
