@@ -2,6 +2,7 @@ package KafkaClone.src.main.java.broker;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 
 public class MessageSerializer {
     // This class handles serialising the message to bytes and deserialising back to message
@@ -32,5 +33,29 @@ public class MessageSerializer {
         buffer.put(valueBytes);
 
         return buffer.array();
+    }
+
+    public Message deSerialize(byte[] byteArray) {
+        // Create bytebuffer
+        ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+
+        int offset = buffer.getInt();
+        
+        long seconds = buffer.getLong();
+        Instant timestamp = Instant.ofEpochSecond(seconds);
+
+        int keyLength = buffer.getInt();
+        byte[] keyBytes = new byte[keyLength];
+        buffer.get(keyBytes);
+
+        String messageKey = new String(keyBytes, StandardCharsets.UTF_8);
+
+        int valueLength = buffer.getInt();
+        byte[] valueBytes = new byte[valueLength];
+        buffer.get(valueBytes);
+
+        String messageValue = new String(valueBytes, StandardCharsets.UTF_8);
+
+        return new Message(messageKey, messageValue, offset, timestamp);
     }
 }
