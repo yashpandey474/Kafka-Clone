@@ -2,6 +2,7 @@ package KafkaClone.src.main.java.broker;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -45,21 +46,22 @@ public class LogSegment {
         this.currentOffset = currentOffset;
     }
 
-    public boolean writeMessage(Message message) throws IOException {
-        // Open the file and write the message at the offset or keep the file open?
-        // open file in append mode
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(logFile, true);
-        } catch (Exception e) {
-            if (writer != null) {
-                writer.close();
-            }
-            System.out.printf("Encountered an error while writing message to file %s: %s", fileName, e.getMessage());
+    public boolean writeMessage(String key, String value) throws IOException {
+        // Create message
+        Message message = new Message(key, value, currentOffset);
+
+        // Serialise message to bytes
+        byte[] messageBytes = MessageSerializer.serialise(message);
+
+        // Now, we are dealing with message bytes and not strings
+        try (FileOutputStream fos = new FileOutputStream(logFile)) {
+            fos.write(messageBytes);
+        } catch (IOException e) {
+            System.out.printf("Encountered error while writing %s : %s at offset %d to file %s. Error: %s", key, value,
+                    currentOffset, logFile, e.getMessage());
             return false;
         }
-        writer.write(currentOffset + ":" + message.content + "\n");
-        writer.close();
+
         setCurrentOffset(currentOffset + 1);
         return true;
     }
@@ -71,8 +73,10 @@ public class LogSegment {
             String line;
 
             while ((line = reader.readLine()) != null) {
+                // Now we will read byte array from line
                 String[] parts = line.split(":");
                 int msgOffset = Integer.parseInt(parts[0]);
+
                 if (msgOffset >= offset) {
                     result.add(new Message(parts[1], msgOffset));
                 }

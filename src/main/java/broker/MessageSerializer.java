@@ -6,7 +6,7 @@ import java.time.Instant;
 
 public class MessageSerializer {
     // This class handles serialising the message to bytes and deserialising back to message
-    public byte[] serialise(Message message) {
+    public static byte[] serialise(Message message) {
 
         // Convert string to bytes
         byte[] keyBytes = message.key.getBytes(StandardCharsets.UTF_8);
@@ -35,7 +35,7 @@ public class MessageSerializer {
         return buffer.array();
     }
 
-    public Message deSerialize(byte[] byteArray) {
+    public static Message deSerialize(byte[] byteArray) {
         // Create bytebuffer
         ByteBuffer buffer = ByteBuffer.wrap(byteArray);
 
