@@ -10,37 +10,52 @@ import java.util.List;
 public class Topic {
     String topicName;
     List<Partition> partitions;
+    int messageLimitPerSegment;
+    String topicDirectoryName;
+    int numPartitions;
 
     // Round robin to partitions
     int currPartition;
 
-    public Topic(String topicName, Integer numPartitions) {
+    public Topic(String topicName, int numPartitions, int messageLimitPerSegment) {
         this.topicName = topicName;
         this.currPartition = 0;
+        this.messageLimitPerSegment = messageLimitPerSegment;
+        this.numPartitions = numPartitions;
 
         // create directory for the partition
-        File topicsDirectory = new File(
-            "data/" + topicName
-        );
+        this.topicDirectoryName = "data/" + topicName;
+        File topicsDirectory = new File(topicDirectoryName);
         topicsDirectory.mkdirs();
 
+        // Initialise partitions
+        initPartitions();
+    }
+    
+    public void initPartitions() {
         partitions = new ArrayList<>(numPartitions);
         for (int i = 0; i < numPartitions; i++) {
-            // create a log file for the partition
-            String fileName = "data/" + topicName + "/partition-" + i + ".log";
-            File file = new File(fileName);
-
             // initialise partition
-            partitions.add(new Partition(i, file, fileName));
+            partitions.add(new Partition(i, messageLimitPerSegment, topicName, topicDirectoryName));
         }
     }
 
-    public void addMessageToTopic(String message) {
+    public void addMessageToTopic(String key, String value) {
         // Publish a message to a particular partition
-        System.out.printf("Message %s being added to partition %d\n", message, currPartition);
+        System.out.printf("Message %s: %s being added to partition %d\n", key, value, currPartition);
 
-        //Create message object
-        partitions.get(currPartition).createAndAddMessage(message);;
+        // Write to partition
+        try {
+            partitions.get(currPartition).addMessage(key, value);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            System.out.printf("Encountered an exception while adding message %s: %s to partition: %d of topic %s", key,
+                    value, currPartition, topicName);
+            e.printStackTrace();
+            return;
+        }
+        
+        // Round robin: next partition
         currPartition = (currPartition + 1) % partitions.size();
     }
 

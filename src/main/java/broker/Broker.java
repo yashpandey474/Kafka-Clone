@@ -16,17 +16,17 @@ public class Broker {
         this.autoTopicCreate = autoTopicCreate;
     }
 
-    public boolean createTopic(String topicName, int numPartitions) {
+    public boolean createTopic(String topicName, int numPartitions, int messageLimitPerSegment) {
         if (topics.containsKey(topicName)) {
             System.out.printf("The topic %s is already present\n", topicName);
             return false;
         }
-        topics.put(topicName, new Topic(topicName, numPartitions));
+        topics.put(topicName, new Topic(topicName, numPartitions, messageLimitPerSegment));
         System.out.printf("New topic created with name %s and partitions %d\n", topicName, numPartitions);
         return true;
     }
 
-    public boolean publishMessage(String message, String topicName) {
+    public boolean publishMessage(String key, String value, String topicName) {
         // Given a message and topic, publish it
         if (!topics.containsKey(topicName)) {
             System.out.printf("Topic with name %s does not exist and auto creation set to %b \n", this.autoTopicCreate);
@@ -38,8 +38,8 @@ public class Broker {
         }
 
         Topic t = topics.get(topicName);
-        t.addMessageToTopic(message);
-        System.out.printf("Published message %s to topic %s", message, topicName);
+        t.addMessageToTopic(key, value);
+        System.out.printf("Published message %s: %s to topic %s", key, value, topicName);
         return true;
     }
 

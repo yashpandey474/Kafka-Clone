@@ -1,15 +1,9 @@
 package KafkaClone.src.main.java.broker;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOError;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 // Partition is what actually holds the messages for a particular topic
 public class Partition {
@@ -40,7 +34,7 @@ public class Partition {
     }
 
     // Partition adds message to its actual message queue
-    public void addMessage(Message message) throws IOException { 
+    public void addMessage(String key, String value) throws IOException { 
         // Initialise the new segment
         if (activeSegment.isFull()) {
             this.activeSegment = new LogSegment(currentOffset, messageLimitPerSegment, partitionDirectoryName,
@@ -48,24 +42,13 @@ public class Partition {
             segments.add(activeSegment);
         }
 
-        activeSegment.writeMessage(message);
+        activeSegment.writeMessage(key, value);
         currentOffset++;
     }
 
     // Fetch messages from a particular offset => correct kafka design to reduce latency and increase throughput
     public List<Message> getMessagesFromOffset(int offset) throws NumberFormatException, IOException {
         // read from file
-        int segmentNo = getSegmentNo();
-        return segments.get(segmentNo).readFromOffset(offset);
-    }
-
-    public void createAndAddMessage(String message) {
-        Message m = new Message(message, currentOffset);
-        try {
-            addMessage(m);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        return activeSegment.readFromOffset(offset);
     }
 }
