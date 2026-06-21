@@ -2,10 +2,13 @@ package KafkaClone.src.main.java.broker;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,22 +72,12 @@ public class LogSegment {
     public List<Message> readFromOffset(int offset) {
         List<Message> result = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                // Now we will read byte array from line
-                String[] parts = line.split(":");
-                int msgOffset = Integer.parseInt(parts[0]);
-
-                if (msgOffset >= offset) {
-                    result.add(new Message(parts[1], msgOffset));
-                }
-            }
-        } catch (Exception e) {
-            System.out.printf("Encountered error while reading from file %s: %s", fileName, e.getMessage());
+        try (FileInputStream fis = new FileInputStream(logFile)) {
+            InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            System.out.printf("Encountered error while reading from file %s from offset: %d. Error: %s",
+                    currentOffset, logFile, e.getMessage());
         }
-
         return result;
     }
     
