@@ -8,11 +8,11 @@ public class Producer {
     public Producer(Broker broker) {
         this.broker = broker;
     }
-    public boolean createTopic(String topicName, int numPartitions) {
-        return this.broker.createTopic(topicName, numPartitions);
+    public boolean createTopic(String topicName, int numPartitions, int messageLimitPerSegment) {
+        return this.broker.createTopic(topicName, numPartitions, messageLimitPerSegment);
     }
-    public boolean publishMessage(String message, String topicName) {
-        boolean val = this.broker.publishMessage(message, topicName);
+    public boolean publishMessage(String key, String value, String topicName) {
+        boolean val = this.broker.publishMessage(key, value, topicName);
         System.out.printf("Message %s published to topic %s", message, topicName);
         return val;
     }
