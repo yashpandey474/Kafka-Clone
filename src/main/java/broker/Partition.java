@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 public class Partition {
     int partitionNo;
     List<LogSegment> segments;
+    LogSegment activeSegment;
     int messageLimitPerSegment;
     int currentOffset;
     String partitionDirectoryName;
@@ -38,24 +39,16 @@ public class Partition {
         this.currentOffset = offset;
     }
 
-    public int getSegmentNo() {
-        return (currentOffset / messageLimitPerSegment);
-    }
     // Partition adds message to its actual message queue
     public void addMessage(Message message) throws IOException { 
-        // Choose correct logsegment based on current offset?
-        int segmentNo = getSegmentNo();
         // Initialise the new segment
-        if (segmentNo == this.segments.size()) {
-            String segmentFileName = partitionDirectoryName + "/segment-" + segmentNo + ".log";
-            File segmentFile = new File(segmentFileName);
-            segments.add(new LogSegment(currentOffset, messageLimitPerSegment, segmentFileName, segmentFile));
-        } else if (segmentNo > this.segments.size()){
-            System.out.printf("Segment No: %d is greater than size of segments %d. Missing segment", segmentNo, this.segments.size());
-            return;
+        if (activeSegment.isFull()) {
+            this.activeSegment = new LogSegment(currentOffset, messageLimitPerSegment, partitionDirectoryName,
+                    segments.size());
+            segments.add(activeSegment);
         }
 
-        segments.get(segmentNo).writeMessage(message);
+        activeSegment.writeMessage(message);
         currentOffset++;
     }
 

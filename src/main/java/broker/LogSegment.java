@@ -28,19 +28,22 @@ public class LogSegment {
     int baseOffset;
     int currentOffset;
     int messageLimit;
+    String partitionDirectoryName;
+    int segmentNo;
 
     public LogSegment(
         int baseOffset,
         int messageLimit,
-        String fileName,
-        File logFile
+        String partitionDirectoryName,
+        int segmentNo
     ) {
         this.baseOffset = baseOffset;
         this.currentOffset = baseOffset;
         this.messageLimit = messageLimit;
-        this.fileName = fileName;
-        this.logFile = logFile;
-
+        this.partitionDirectoryName = partitionDirectoryName;
+        this.segmentNo = segmentNo;
+        this.fileName = partitionDirectoryName + "/segment-" + segmentNo + ".log";
+        this.logFile = new File(fileName);
     }
 
     public boolean isFull() {
@@ -59,7 +62,7 @@ public class LogSegment {
         byte[] messageBytes = MessageSerializer.serialise(message);
 
         // Now, we are dealing with message bytes and not strings
-        try (FileOutputStream fos = new FileOutputStream(logFile)) {
+        try (FileOutputStream fos = new FileOutputStream(logFile, true)) {
             fos.write(messageBytes);
         } catch (IOException e) {
             System.out.printf("Encountered error while writing %s : %s at offset %d to file %s. Error: %s", key, value,
