@@ -13,7 +13,7 @@ public class Producer {
     }
     public boolean publishMessage(String key, String value, String topicName) {
         boolean val = this.broker.publishMessage(key, value, topicName);
-        System.out.printf("Message %s published to topic %s", message, topicName);
+        System.out.printf("Message %s : %s published to topic %s", key, value, topicName);
         return val;
     }
 }

@@ -9,11 +9,13 @@ public class Broker {
     Map<String, Topic> topics;
     boolean autoTopicCreate;
     int defaultPartition;
+    int defaultMessageLimitPerSegment;
 
-    public Broker(boolean autoTopicCreate, int defaultPartition) {
+    public Broker(boolean autoTopicCreate, int defaultPartition, int defaultMessageLimitPerSegment) {
         this.topics = new HashMap<>();
         this.defaultPartition = defaultPartition;
         this.autoTopicCreate = autoTopicCreate;
+        this.defaultMessageLimitPerSegment = defaultMessageLimitPerSegment;
     }
 
     public boolean createTopic(String topicName, int numPartitions, int messageLimitPerSegment) {
@@ -34,7 +36,7 @@ public class Broker {
                 System.out.printf("ERROR: Topic does not exist \n");
                 return false;
             }
-            createTopic(topicName, this.defaultPartition);
+            createTopic(topicName, this.defaultPartition, this.defaultMessageLimitPerSegment);
         }
 
         Topic t = topics.get(topicName);

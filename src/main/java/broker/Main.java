@@ -8,18 +8,19 @@ public class Main {
         // 
         boolean automaticTopicCreation = false;
         int defaultPartition = 3;
+        int defaultMessageLimitPerSegment = 1000;
         
         // Initialise Kafka Brokers
-        Broker b = new Broker(automaticTopicCreation, defaultPartition);
+        Broker b = new Broker(automaticTopicCreation, defaultPartition, defaultMessageLimitPerSegment);
 
         //Initialie a producer - independent from Brokers
         Producer p = new Producer(b);
 
         // Create a topic
-        p.createTopic("topic1", 3);
+        p.createTopic("topic1", 3, 1000);
 
         // Publish a message
-        p.publishMessage("message1", "topic1");
+        p.publishMessage("message-key-1", "message-value-1",  "topic1");
 
         // Consumers
         // 1 consumer subscribes to a particular topic

@@ -1,18 +1,20 @@
 package KafkaClone.src.main.java.broker;
-
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 // What is a log segment?
 // A partition needs to persist the messages it stores to achieve persistence in case of failure
@@ -31,6 +33,10 @@ public class LogSegment {
     String partitionDirectoryName;
     int segmentNo;
 
+    // Index: Store offset to byte
+    File indexFile;
+    Map<Integer, Long> offsetIndex; // Offset -> byte number
+
     public LogSegment(
         int baseOffset,
         int messageLimit,
@@ -44,6 +50,7 @@ public class LogSegment {
         this.segmentNo = segmentNo;
         this.fileName = partitionDirectoryName + "/segment-" + segmentNo + ".log";
         this.logFile = new File(fileName);
+        this.indexFile = new File(partitionDirectoryName + "/segment-" + segmentNo + ".index");
     }
 
     public boolean isFull() {
@@ -60,47 +67,54 @@ public class LogSegment {
 
         // Serialise message to bytes
         byte[] messageBytes = MessageSerializer.serialise(message);
+        int messageLength = messageBytes.length;
+        ByteBuffer record = ByteBuffer.allocate(4 + messageLength);
+        record.putInt(messageLength);
+        record.put(messageBytes);
 
         // Now, we are dealing with message bytes and not strings
+        long currentFileLength = logFile.length(); // Number of bytes in file currently
+        System.out.println("Before write: " + logFile.length() + " bytes\nMessage size: " + messageBytes.length);
+
         try (FileOutputStream fos = new FileOutputStream(logFile, true)) {
-            fos.write(messageBytes);
+            fos.write(record.array());
         } catch (IOException e) {
             System.out.printf("Encountered error while writing %s : %s at offset %d to file %s. Error: %s", key, value,
                     currentOffset, logFile, e.getMessage());
             return false;
         }
 
+        // Store offset -> byte, message of this offset starts at this byte
+        offsetIndex.put(currentOffset, currentFileLength);
+
+        // Write to the index file
+        String indexEntry = currentOffset + "," + currentFileLength + "\n"; // Make this binary later, maybe 2 functions
+                                                                            // in MessageSerializer
+        try (FileWriter fw = new FileWriter(indexFile, true)) { // use random access file
+            fw.write(indexEntry);
+        }
+
+        System.out.println("After writing: " + logFile.length() + " bytes");
         setCurrentOffset(currentOffset + 1);
+
         return true;
     }
-    
+
     public List<Message> readFromOffset(int offset) {
+        // Byte number where the message for offset starts
         List<Message> result = new ArrayList<>();
+        
+        // Byte to read from
+        if (offsetIndex.get(offset) == null) {
+            System.out.printf("Offset: %d does not exist in index, cannot read any messages", offset);
+            return result;
+        }
 
-        try (FileInputStream fis = new FileInputStream(logFile)) {
-            BufferedInputStream bis = new BufferedInputStream(fis);
+        long offsetByte = offsetIndex.get(offset);
+        
+        try (RandomAccessFile raf = new RandomAccessFile(logFile, "r")) {
+            raf.seek(offsetByte);
             
-            // Skip lines before offset //TODO: Add an index file
-            int linesSkipped = 0;
-            int b;
-            while (linesSkipped < offset && (b = bis.read()) != -1) {
-                if (b == '\n') {
-                    linesSkipped++;
-                }
-            }   
-          
-
-            // Read the file, reading each line as a list of bytes
-            ByteArrayOutputStream currentBytes = new ByteArrayOutputStream();
-            while ((b = bis.read()) != -1) {
-                if (b == '\n') {
-                    // Parse the current line of bytes
-                    result.add(MessageSerializer.deSerialize(currentBytes.toByteArray()));
-                    currentBytes.reset();
-                } else {
-                    currentBytes.write(b);
-                }
-            }
             
         } catch (IOException e) {
             System.out.printf("Encountered error while reading from file %s from offset: %d. Error: %s",

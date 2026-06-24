@@ -31,7 +31,7 @@ public class MessageSerializer {
         buffer.put(keyBytes);
         buffer.putInt(valueFieldValueBytes);
         buffer.put(valueBytes);
-
+        
         return buffer.array();
     }
 
