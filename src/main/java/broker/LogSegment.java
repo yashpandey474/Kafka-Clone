@@ -32,10 +32,8 @@ public class LogSegment {
     int messageLimit;
     String partitionDirectoryName;
     int segmentNo;
-
-    // Index: Store offset to byte
-    File indexFile;
-    Map<Integer, Long> offsetIndex; // Offset -> byte number
+    OffsetIndex offsetIndex;
+ 
 
     public LogSegment(
         int baseOffset,
@@ -50,7 +48,7 @@ public class LogSegment {
         this.segmentNo = segmentNo;
         this.fileName = partitionDirectoryName + "/segment-" + segmentNo + ".log";
         this.logFile = new File(fileName);
-        this.indexFile = new File(partitionDirectoryName + "/segment-" + segmentNo + ".index");
+        this.offsetIndex = new OffsetIndex(partitionDirectoryName, segmentNo);
     }
 
     public boolean isFull() {
@@ -84,15 +82,8 @@ public class LogSegment {
             return false;
         }
 
-        // Store offset -> byte, message of this offset starts at this byte
-        offsetIndex.put(currentOffset, currentFileLength);
-
-        // Write to the index file
-        String indexEntry = currentOffset + "," + currentFileLength + "\n"; // Make this binary later, maybe 2 functions
-                                                                            // in MessageSerializer
-        try (FileWriter fw = new FileWriter(indexFile, true)) { // use random access file
-            fw.write(indexEntry);
-        }
+        // Add entry to index
+        offsetIndex.addEntry(currentOffset, currentFileLength);
 
         System.out.println("After writing: " + logFile.length() + " bytes");
         setCurrentOffset(currentOffset + 1);
@@ -105,7 +96,8 @@ public class LogSegment {
         List<Message> result = new ArrayList<>();
         
         // Byte to read from
-        if (offsetIndex.get(offset) == null) {
+        long destBytes = offsetIndex.lookupOffset(offset);
+        if (offsetIndex.lookupOffset(offset) == null) {
             System.out.printf("Offset: %d does not exist in index, cannot read any messages", offset);
             return result;
         }
@@ -115,10 +107,22 @@ public class LogSegment {
         try (RandomAccessFile raf = new RandomAccessFile(logFile, "r")) {
             raf.seek(offsetByte);
             
-            
+            while (raf.getFilePointer() < raf.length()) {
+
+                Message message = MessageSerializer.deserialize(raf);
+
+                if (message == null) {
+                    break;
+                }
+
+                result.add(message);
+            }
         } catch (IOException e) {
-            System.out.printf("Encountered error while reading from file %s from offset: %d. Error: %s",
-                    currentOffset, logFile, e.getMessage());
+            System.out.printf(
+                    "Encountered error while reading from file %s from offset %d. Error: %s%n",
+                    logFile.getName(),
+                    offset,
+                    e.getMessage());
         }
         return result;
     }

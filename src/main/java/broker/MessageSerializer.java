@@ -1,5 +1,7 @@
 package KafkaClone.src.main.java.broker;
 
+import java.io.DataInput;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -35,27 +37,26 @@ public class MessageSerializer {
         return buffer.array();
     }
 
-    public static Message deSerialize(byte[] byteArray) {
-        // Create bytebuffer
-        ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+    public static Message deserialize(DataInput in) throws IOException {
+        int offset = in.readInt();
 
-        int offset = buffer.getInt();
-        
-        long seconds = buffer.getLong();
+        long seconds = in.readLong();
         Instant timestamp = Instant.ofEpochSecond(seconds);
 
-        int keyLength = buffer.getInt();
+        int keyLength = in.readInt();
+
         byte[] keyBytes = new byte[keyLength];
-        buffer.get(keyBytes);
+        in.readFully(keyBytes);
 
-        String messageKey = new String(keyBytes, StandardCharsets.UTF_8);
+        String key = new String(keyBytes, StandardCharsets.UTF_8);
 
-        int valueLength = buffer.getInt();
+        int valueLength = in.readInt();
+
         byte[] valueBytes = new byte[valueLength];
-        buffer.get(valueBytes);
+        in.readFully(valueBytes);
 
-        String messageValue = new String(valueBytes, StandardCharsets.UTF_8);
+        String value = new String(valueBytes, StandardCharsets.UTF_8);
 
-        return new Message(messageKey, messageValue, offset, timestamp);
+        return new Message(key, value, offset, timestamp);
     }
 }
