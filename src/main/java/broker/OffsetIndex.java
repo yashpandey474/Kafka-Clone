@@ -29,6 +29,10 @@ public class OffsetIndex {
     }
     
     long lookupOffset(int offset) {
+        if (!offsetIndex.containsKey(offset)) {
+            System.out.printf("Offset requested %d not present in the map", offset);
+            return -1;
+        }
         return offsetIndex.get(offset);
     }
 }

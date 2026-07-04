@@ -96,13 +96,11 @@ public class LogSegment {
         List<Message> result = new ArrayList<>();
         
         // Byte to read from
-        long destBytes = offsetIndex.lookupOffset(offset);
-        if (offsetIndex.lookupOffset(offset) == null) {
+        long offsetByte = offsetIndex.lookupOffset(offset);
+        if (offsetByte < 0) {
             System.out.printf("Offset: %d does not exist in index, cannot read any messages", offset);
             return result;
         }
-
-        long offsetByte = offsetIndex.get(offset);
         
         try (RandomAccessFile raf = new RandomAccessFile(logFile, "r")) {
             raf.seek(offsetByte);
