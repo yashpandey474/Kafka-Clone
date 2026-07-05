@@ -10,12 +10,12 @@ import java.util.Map;
 public class OffsetIndex {
     Map<Integer, Long> offsetIndex; // Offset -> byte number
     File indexFile; // Index: Store offset to byte
-    int largestOffsetInit;
+    int largestRecoveredOffset;
 
     public OffsetIndex(String partitionDirectoryName, int segmentNo) {
         this.indexFile = new File(partitionDirectoryName + "/segment-" + segmentNo + ".index");
         this.offsetIndex = new HashMap<>();
-        this.largestOffsetInit = -1;
+        this.largestRecoveredOffset = -1;
         loadMapFromFile();
 
     }
@@ -46,6 +46,11 @@ public class OffsetIndex {
     }
 
     void loadMapFromFile() {
+        if (!indexFile.exists()) {
+            System.out.printf("Index file %s does not exist \n", indexFile.getName());
+            return;
+        }
+
         try (RandomAccessFile raf = new RandomAccessFile(indexFile, "r")) {
             String line;
             // Read until the end of the file
@@ -57,9 +62,8 @@ public class OffsetIndex {
                 long byteNo = Long.parseLong(parts[1].trim());
                 offsetIndex.put(offset, byteNo);
 
-                // Set largest offset
-                largestOffsetInit = offset;
-            }
+                // Even if file gets reordered, we still get the largest offset`
+                largestRecoveredOffset = Math.max(largestRecoveredOffset, offset);            }
 
         } catch (IOException e) {
             System.out.printf(

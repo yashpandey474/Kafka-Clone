@@ -50,8 +50,12 @@ public class LogSegment {
         this.offsetIndex = new OffsetIndex(partitionDirectoryName, segmentNo);
         
         // Get current offset from index file, largest offset in index + 1
-        this.currentOffset = offsetIndex.largestOffsetInit + 1;
-        this.baseOffset = 0;
+        this.baseOffset = baseOffset;
+        if (offsetIndex.largestRecoveredOffset == -1) {
+            this.currentOffset = baseOffset;
+        } else {
+            this.currentOffset = offsetIndex.largestRecoveredOffset + 1;
+        }
     }
 
     public boolean isFull() {
@@ -99,7 +103,7 @@ public class LogSegment {
         List<Message> result = new ArrayList<>();
 
         // Check valid range
-        if (offset < 0 || offset >= currentOffset) {
+        if (offset < baseOffset|| offset >= currentOffset) {
             System.out.printf("Offset requested: %d is out of range: %d - %d", offset, 0, currentOffset - 1);
             return result;
         }
