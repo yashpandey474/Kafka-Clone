@@ -10,10 +10,14 @@ import java.util.Map;
 public class OffsetIndex {
     Map<Integer, Long> offsetIndex; // Offset -> byte number
     File indexFile; // Index: Store offset to byte
+    int largestOffsetInit;
 
     public OffsetIndex(String partitionDirectoryName, int segmentNo) {
-        loadMapFromFile();
         this.indexFile = new File(partitionDirectoryName + "/segment-" + segmentNo + ".index");
+        this.offsetIndex = new HashMap<>();
+        this.largestOffsetInit = -1;
+        loadMapFromFile();
+
     }
 
     String createIndexEntry(int currentOffset, long currentFileLength) {
@@ -52,6 +56,9 @@ public class OffsetIndex {
                 int offset = Integer.parseInt(parts[0].trim());
                 long byteNo = Long.parseLong(parts[1].trim());
                 offsetIndex.put(offset, byteNo);
+
+                // Set largest offset
+                largestOffsetInit = offset;
             }
 
         } catch (IOException e) {

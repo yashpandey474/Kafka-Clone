@@ -41,14 +41,17 @@ public class LogSegment {
         String partitionDirectoryName,
         int segmentNo
     ) {
-        this.baseOffset = baseOffset;
-        this.currentOffset = baseOffset;
+
         this.messageLimit = messageLimit;
-        this.partitionDirectoryName = partitionDirectoryName;
         this.segmentNo = segmentNo;
+        this.partitionDirectoryName = partitionDirectoryName;
         this.fileName = partitionDirectoryName + "/segment-" + segmentNo + ".log";
         this.logFile = new File(fileName);
         this.offsetIndex = new OffsetIndex(partitionDirectoryName, segmentNo);
+        
+        // Get current offset from index file, largest offset in index + 1
+        this.currentOffset = offsetIndex.largestOffsetInit + 1;
+        this.baseOffset = 0;
     }
 
     public boolean isFull() {
