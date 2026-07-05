@@ -1,4 +1,4 @@
-package KafkaClone.src.main.java.broker;
+package KafkaClone.src.main.java.broker.storage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -94,6 +94,12 @@ public class LogSegment {
     public List<Message> readFromOffset(int offset) {
         // Byte number where the message for offset starts
         List<Message> result = new ArrayList<>();
+
+        // Check valid range
+        if (offset < 0 || offset >= currentOffset) {
+            System.out.printf("Offset requested: %d is out of range: %d - %d", offset, 0, currentOffset - 1);
+            return result;
+        }
         
         // Byte to read from
         long offsetByte = offsetIndex.lookupOffset(offset);

@@ -1,4 +1,4 @@
-package KafkaClone.src.main.java.broker;
+package KafkaClone.src.main.java.broker.storage;
 
 import java.io.DataInput;
 import java.io.IOException;

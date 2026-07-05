@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import KafkaClone.src.main.java.broker.storage.Message;
+
 // Broker is a kafka server, we start with only one server containing all topics
 public class Broker {
     Map<String, Topic> topics;

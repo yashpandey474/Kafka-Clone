@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import KafkaClone.src.main.java.broker.storage.LogSegment;
+import KafkaClone.src.main.java.broker.storage.Message;
+
 // Partition is what actually holds the messages for a particular topic
 public class Partition {
     int partitionNo;
