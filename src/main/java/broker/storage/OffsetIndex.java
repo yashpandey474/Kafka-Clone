@@ -46,6 +46,7 @@ public class OffsetIndex {
     }
 
     void loadMapFromFile() {
+        // if index file does not exist, cannot recover offset from here
         if (!indexFile.exists()) {
             System.out.printf("Index file %s does not exist \n", indexFile.getName());
             return;

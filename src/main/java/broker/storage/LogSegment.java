@@ -48,14 +48,22 @@ public class LogSegment {
         this.fileName = partitionDirectoryName + "/segment-" + segmentNo + ".log";
         this.logFile = new File(fileName);
         this.offsetIndex = new OffsetIndex(partitionDirectoryName, segmentNo);
-        
-        // Get current offset from index file, largest offset in index + 1
         this.baseOffset = baseOffset;
+        this.recover();
+    }
+
+    // separate out since recovery can be complex later on, returns true if recovery was successful
+    public boolean recover() {
+        // Get current offset from index file, largest offset in index + 1
         if (offsetIndex.largestRecoveredOffset == -1) {
             this.currentOffset = baseOffset;
         } else {
+            // set to largest offset in index + 1 
+            // later, we should check for partial writes since index might not be ideal gt
+            // log is actual source of truth
             this.currentOffset = offsetIndex.largestRecoveredOffset + 1;
         }
+        return true;
     }
 
     public boolean isFull() {
