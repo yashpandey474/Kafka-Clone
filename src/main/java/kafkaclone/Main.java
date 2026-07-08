@@ -1,6 +1,7 @@
-package KafkaClone.src.main.java.broker;
+package KafkaClone.src.main.java.kafkaclone;
 
-import KafkaClone.src.main.java.broker.producer.Producer;
+import KafkaClone.src.main.java.kafkaclone.broker.Broker;
+import KafkaClone.src.main.java.kafkaclone.producer.Producer;
 
 public class Main {
 

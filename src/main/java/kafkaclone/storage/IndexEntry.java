@@ -1,8 +1,8 @@
-package KafkaClone.src.main.java.broker.storage;
+package KafkaClone.src.main.java.kafkaclone.storage;
 
 public class IndexEntry {
     int offset;
     long byteNo;
 
-    
+
 }

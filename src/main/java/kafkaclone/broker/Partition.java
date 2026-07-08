@@ -1,11 +1,19 @@
-package KafkaClone.src.main.java.broker.storage;
+package KafkaClone.src.main.java.kafkaclone.broker;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import KafkaClone.src.main.java.kafkaclone.storage.LogSegment;
+import KafkaClone.src.main.java.kafkaclone.storage.Message;
 
 // Partition is what actually holds the messages for a particular topic
 public class Partition {
@@ -29,7 +37,35 @@ public class Partition {
         partitionDirectory.mkdirs();
 
         // read all segment files in the directory and create logsegments
+        Path path = Paths.get(partitionDirectoryName);
+        List<Integer> segmentNumbers = new ArrayList<>();
 
+        try (Stream<Path> stream = Files.list(path)) {
+            stream
+                    .filter(Files::isRegularFile) // Excludes directories
+                    .filter(file -> file.toString().endsWith(".log"))
+                    .forEach(file -> {
+                        String filename = file.getFileName().toString();
+                        int segmentNo = Integer.parseInt(
+                            filename
+                                .replace("segment-", "")
+                                .replace(".log", "")
+                        );
+                        segmentNumbers.add(segmentNo);
+                    }); 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        segmentNumbers.sort(null);
+        LogSegment segment;
+        for (int i = 0; i < segmentNumbers.size(); i++) {
+            segment = new LogSegment(messageLimitPerSegment * segmentNumbers.get(i), messageLimitPerSegment, partitionDirectoryName, segmentNumbers.get(i));
+            if (i == segmentNumbers.size() - 1) {
+                activeSegment = segment;
+            }
+            segments.add(segment);
+        }
     }
     
     public int getSegmentNo(int offset) {
@@ -49,10 +85,9 @@ public class Partition {
         // Initialise the new segment
         if (activeSegment.isFull()) {
             this.activeSegment = new LogSegment(currentOffset, messageLimitPerSegment, partitionDirectoryName,
-                    segments.size());
+                    segments.size() + 1);
             segments.add(activeSegment);
         }
-
         activeSegment.writeMessage(key, value);
         currentOffset++;
     }

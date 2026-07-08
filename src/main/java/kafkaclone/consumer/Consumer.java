@@ -1,9 +1,9 @@
-package KafkaClone.src.main.java.broker.consumer;
+package KafkaClone.src.main.java.kafkaclone.consumer;
 import java.util.List;
 import java.util.Map;
 
-import KafkaClone.src.main.java.broker.Broker;
-import KafkaClone.src.main.java.broker.storage.Message;
+import KafkaClone.src.main.java.kafkaclone.broker.Broker;
+import KafkaClone.src.main.java.kafkaclone.storage.Message;
 
 public class Consumer {
     // Consumer reads from a partition and maintains offset too

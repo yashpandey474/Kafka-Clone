@@ -1,10 +1,10 @@
-package KafkaClone.src.main.java.broker;
+package KafkaClone.src.main.java.kafkaclone.broker;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import KafkaClone.src.main.java.broker.storage.Message;
+import KafkaClone.src.main.java.kafkaclone.storage.Message;
 
 // Broker is a kafka server, we start with only one server containing all topics
 public class Broker {

@@ -1,4 +1,4 @@
-package KafkaClone.src.main.java.broker.storage;
+package KafkaClone.src.main.java.kafkaclone.storage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;

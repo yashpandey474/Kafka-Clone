@@ -1,5 +1,5 @@
-package KafkaClone.src.main.java.broker.producer;
-import KafkaClone.src.main.java.broker.Broker;
+package KafkaClone.src.main.java.kafkaclone.producer;
+import KafkaClone.src.main.java.kafkaclone.broker.Broker;
 
 public class Producer {
     // Producer publishes messages to a broker
