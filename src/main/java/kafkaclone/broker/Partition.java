@@ -23,9 +23,9 @@ public class Partition {
     int messageLimitPerSegment;
     int currentOffset;
     String partitionDirectoryName;
-    private static final Logger logger = LoggerFactory.getLogger(LogSegment.class);
+    private static final Logger logger = LoggerFactory.getLogger(Partition.class);
 
-    public Partition(int partitionNo, int messageLimitPerSegment, String topicName, String topicDirectoryName) {
+    public Partition(int partitionNo, int messageLimitPerSegment, String topicDirectoryName) {
 
         this.partitionNo = partitionNo;
         this.messageLimitPerSegment = messageLimitPerSegment;
@@ -128,7 +128,7 @@ public class Partition {
         // read through segments
         List<Message> messages = segments.get(segNo).readFromOffset(offset);
         for (int i = segNo + 1; i < segments.size(); i++) {
-            messages.addAll(segments.get(i).readFromOffset(0));
+            messages.addAll(segments.get(i).readFromOffset(segments.get(i).getBaseOffset()));
         }
         return messages;
     }

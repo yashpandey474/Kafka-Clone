@@ -74,6 +74,10 @@ public class LogSegment {
         return this.messageLimit == (this.currentOffset - this.baseOffset);
     }
 
+    public int getCurrentOffset() {
+        return this.currentOffset;
+    }
+
     public void setCurrentOffset(int currentOffset) {
         this.currentOffset = currentOffset;
     }
