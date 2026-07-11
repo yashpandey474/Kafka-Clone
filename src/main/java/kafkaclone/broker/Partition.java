@@ -37,6 +37,10 @@ public class Partition {
         partitionDirectory.mkdirs();
 
         // read all segment files in the directory and create logsegments
+        this.recover();
+    }
+
+    public void recover() {
         Path path = Paths.get(partitionDirectoryName);
         List<Integer> segmentNumbers = new ArrayList<>();
 
@@ -47,25 +51,31 @@ public class Partition {
                     .forEach(file -> {
                         String filename = file.getFileName().toString();
                         int segmentNo = Integer.parseInt(
-                            filename
-                                .replace("segment-", "")
-                                .replace(".log", "")
-                        );
+                                filename
+                                        .replace("segment-", "")
+                                        .replace(".log", ""));
                         segmentNumbers.add(segmentNo);
-                    }); 
+                    });
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        segmentNumbers.sort(null);
+        
         LogSegment segment;
+
+        // if there are no segments in the directory, create a segment and assign it as the active one
+        if (segmentNumbers.size() == 0) {
+            segment = new LogSegment(0, messageLimitPerSegment, partitionDirectoryName, 0);
+            activeSegment = segment;
+        }
+        // sort so that the last segment is the active segment
+        segmentNumbers.sort(null);
+
         for (int i = 0; i < segmentNumbers.size(); i++) {
-            segment = new LogSegment(messageLimitPerSegment * segmentNumbers.get(i), messageLimitPerSegment, partitionDirectoryName, segmentNumbers.get(i));
-            if (i == segmentNumbers.size() - 1) {
-                activeSegment = segment;
-            }
+            segment = new LogSegment(messageLimitPerSegment * segmentNumbers.get(i), messageLimitPerSegment,
+                    partitionDirectoryName, segmentNumbers.get(i));
             segments.add(segment);
         }
+        activeSegment = segments.get(segments.size() - 1);
     }
     
     public int getSegmentNo(int offset) {
