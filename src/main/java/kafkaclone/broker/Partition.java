@@ -59,7 +59,7 @@ public class Partition {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
+
         LogSegment segment;
         this.segments = new ArrayList<>();
 
@@ -81,50 +81,55 @@ public class Partition {
         }
         activeSegment = segments.get(segments.size() - 1);
     }
-    
 
-    public LogSegment getSegmentForOffset(int offset) {
-        LogSegment segment;
+
+    // Recovery could load random number of segments, check active segment
+    public int getNextSegmentNo() {
+        return this.activeSegment.getSegmentNo() + 1;
+    }
+    
+    // TODO: optimize with binary search
+    public int getSegmentNoForOffset(int offset) {
+        int segNo = -1;
         for (int i = 0; i < segments.size(); i++) {
             if (segments.get(i).getBaseOffset() > offset) {
                 break;
             }
-            segment = segments.get(i);
+            segNo = i;
         }
 
-        return segment;
+        return segNo;
     }
 
     public int getCurrentOffset() {
-        return this.currentOffset;
-    }
-
-    public void setCurrentOffset(int offset) {
-        this.currentOffset = offset;
+        return activeSegment.getCurrentOffset();
     }
 
     // Partition adds message to its actual message queue
     public void addMessage(String key, String value) throws IOException { 
         // Initialise the new segment
         if (activeSegment.isFull()) {
-            this.activeSegment = new LogSegment(currentOffset, messageLimitPerSegment, partitionDirectoryName,
-                    segments.size() + 1);
+            this.activeSegment = new LogSegment(getCurrentOffset(), messageLimitPerSegment, partitionDirectoryName,
+                    segments.size());
             segments.add(activeSegment);
         }
         activeSegment.writeMessage(key, value);
-        currentOffset++;
     }
 
     // Fetch messages from a particular offset => correct kafka design to reduce latency and increase throughput
     public List<Message> getMessagesFromOffset(int offset) throws NumberFormatException, IOException {
         // figure out correct segment
-        int segNo = getSegmentNo(offset);
-        if (segNo < 0 || segNo > segments.size()) {
-            logger.error("Offset {} belongs to Segment {} which is out of range {} - {}", offset, segNo, 0,
-                    segments.size());
+        int segNo = getSegmentNoForOffset(offset);
+        if (segNo < 0 || segNo >= segments.size()) {
+            logger.error("Offset {} is out of range {} - {}", offset, 0, segments.size());
             return null;
         }
-        // read from file
-        return segments.get(segNo).readFromOffset(offset);
+
+        // read through segments
+        List<Message> messages = segments.get(segNo).readFromOffset(offset);
+        for (int i = segNo + 1; i < segments.size(); i++) {
+            messages.addAll(segments.get(i).readFromOffset(0));
+        }
+        return messages;
     }
 }

@@ -78,6 +78,10 @@ public class LogSegment {
         this.currentOffset = currentOffset;
     }
 
+    public int getSegmentNo() {
+        return this.segmentNo;
+    }
+
     public boolean writeMessage(String key, String value) throws IOException {
         // Create message
         Message message = new Message(key, value, currentOffset);
