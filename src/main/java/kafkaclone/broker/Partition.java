@@ -23,9 +23,9 @@ public class Partition {
     int messageLimitPerSegment;
     int currentOffset;
     String partitionDirectoryName;
+    private static final Logger logger = LoggerFactory.getLogger(LogSegment.class);
 
     public Partition(int partitionNo, int messageLimitPerSegment, String topicName, String topicDirectoryName) {
-        private static final Logger logger = LoggerFactory.getLogger(LogSegment.class);
 
         this.partitionNo = partitionNo;
         this.messageLimitPerSegment = messageLimitPerSegment;
@@ -61,12 +61,16 @@ public class Partition {
         }
         
         LogSegment segment;
+        this.segments = new ArrayList<>();
 
         // if there are no segments in the directory, create a segment and assign it as the active one
         if (segmentNumbers.size() == 0) {
             segment = new LogSegment(0, messageLimitPerSegment, partitionDirectoryName, 0);
             activeSegment = segment;
+            segments.add(segment);
+            return;
         }
+
         // sort so that the last segment is the active segment
         segmentNumbers.sort(null);
 
@@ -78,8 +82,17 @@ public class Partition {
         activeSegment = segments.get(segments.size() - 1);
     }
     
-    public int getSegmentNo(int offset) {
-        return (offset / messageLimitPerSegment);
+
+    public LogSegment getSegmentForOffset(int offset) {
+        LogSegment segment;
+        for (int i = 0; i < segments.size(); i++) {
+            if (segments.get(i).getBaseOffset() > offset) {
+                break;
+            }
+            segment = segments.get(i);
+        }
+
+        return segment;
     }
 
     public int getCurrentOffset() {

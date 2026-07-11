@@ -66,6 +66,10 @@ public class LogSegment {
         return true;
     }
 
+    public int getBaseOffset() {
+        return this.baseOffset;
+    }
+
     public boolean isFull() {
         return this.messageLimit == (this.currentOffset - this.baseOffset);
     }
