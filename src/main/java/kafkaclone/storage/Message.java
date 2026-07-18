@@ -11,6 +11,8 @@ public class Message {
     int offset; // so that consumer also knows until which offset they had read and can continue from there
     Instant timestamp;
 
+    long bytes;
+
     public Message(String key, String value, int offset) {
         this.key = key;
         this.value = value;

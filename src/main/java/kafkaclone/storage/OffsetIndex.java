@@ -46,32 +46,7 @@ public class OffsetIndex {
     }
 
     void loadMapFromFile() {
-        // if index file does not exist, cannot recover offset from here
-        if (!indexFile.exists()) {
-            System.out.printf("Index file %s does not exist \n", indexFile.getName());
-            return;
-        }
 
-        try (RandomAccessFile raf = new RandomAccessFile(indexFile, "r")) {
-            String line;
-            // Read until the end of the file
-            while ((line = raf.readLine()) != null) {
-                String[] parts = line.split(",");
-
-                // Create a new entry
-                int offset = Integer.parseInt(parts[0].trim());
-                long byteNo = Long.parseLong(parts[1].trim());
-                offsetIndex.put(offset, byteNo);
-
-                // Even if file gets reordered, we still get the largest offset`
-                largestRecoveredOffset = Math.max(largestRecoveredOffset, offset);            }
-
-        } catch (IOException e) {
-            System.out.printf(
-                    "Encountered error while reading from file %s from offset %d. Error: %s%n",
-                    indexFile.getName(),
-                    e.getMessage());
-        }
     }
 
 }

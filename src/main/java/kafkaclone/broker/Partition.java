@@ -26,10 +26,8 @@ public class Partition {
     private static final Logger logger = LoggerFactory.getLogger(Partition.class);
 
     public Partition(int partitionNo, int messageLimitPerSegment, String topicDirectoryName) {
-
         this.partitionNo = partitionNo;
         this.messageLimitPerSegment = messageLimitPerSegment;
-
         this.currentOffset = 0;
 
         this.partitionDirectoryName = topicDirectoryName + "/partition-" + partitionNo;
@@ -73,7 +71,6 @@ public class Partition {
 
         // sort so that the last segment is the active segment
         segmentNumbers.sort(null);
-
         for (int i = 0; i < segmentNumbers.size(); i++) {
             segment = new LogSegment(messageLimitPerSegment * segmentNumbers.get(i), messageLimitPerSegment,
                     partitionDirectoryName, segmentNumbers.get(i));

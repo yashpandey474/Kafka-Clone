@@ -33,7 +33,6 @@ public class LogSegment {
     String partitionDirectoryName;
     int segmentNo;
     OffsetIndex offsetIndex;
- 
 
     public LogSegment(
         int baseOffset,
@@ -55,15 +54,49 @@ public class LogSegment {
     // separate out since recovery can be complex later on, returns true if recovery was successful
     public boolean recover() {
         // Get current offset from index file, largest offset in index + 1
-        if (offsetIndex.largestRecoveredOffset == -1) {
-            this.currentOffset = baseOffset;
-        } else {
-            // set to largest offset in index + 1 
-            // later, we should check for partial writes since index might not be ideal gt
-            // log is actual source of truth
-            this.currentOffset = offsetIndex.largestRecoveredOffset + 1;
+        if (!logFile.exists()) {
+            currentOffset = baseOffset;
+            return true;
         }
-        return true;
+        return recoverFromLog();
+    }
+
+    public boolean recoverFromLog() {
+        // if index file does not exist, cannot recover offset from here
+        if (!logFile.exists()) {
+            System.out.printf("Log file %s does not exist \n", logFile.getName());
+            return false;
+        }
+
+        try (RandomAccessFile raf = new RandomAccessFile(logFile, "r")) {
+            currentOffset = baseOffset;
+            long currentByte = 0;
+            while (raf.getFilePointer() < raf.length()) {
+                // get a message
+                long recordStartByte = raf.getFilePointer();
+                
+                // Need at least 4 bytes for record length
+                if (raf.length() - raf.getFilePointer() < Integer.BYTES) {
+                    break;
+                }
+
+                offsetIndex.addEntry(
+                    message.offset,
+                    currentByte
+                );
+
+                currentOffset = Math.max(
+                    currentOffset, 
+                    message.offset + 1
+                );
+            }
+
+        } catch (IOException e) {
+            System.out.printf(
+                    "Encountered error while reading from file %s from offset %d. Error: %s%n",
+                    indexFile.getName(),
+                    e.getMessage());
+        }
     }
 
     public int getBaseOffset() {
@@ -111,7 +144,6 @@ public class LogSegment {
 
         // Add entry to index
         offsetIndex.addEntry(currentOffset, currentFileLength);
-
         System.out.println("After writing: " + logFile.length() + " bytes");
         setCurrentOffset(currentOffset + 1);
 
